@@ -70,10 +70,10 @@ function formatValue(
 export function SensitivityHeatmap({ sensitivity, scale = "actual" }: SensitivityHeatmapProps) {
   const [metric, setMetric] = useState<SensitivityMetric>("irr_pct");
 
-  const exitRates = [...new Set(sensitivity.map((s) => s.exit_cap_rate))].sort(
+  const exitRates = Array.from(new Set(sensitivity.map((s) => s.exit_cap_rate))).sort(
     (a, b) => a - b
   );
-  const rentGrowths = [...new Set(sensitivity.map((s) => s.rent_growth))].sort(
+  const rentGrowths = Array.from(new Set(sensitivity.map((s) => s.rent_growth))).sort(
     (a, b) => a - b
   );
 
@@ -144,12 +144,12 @@ export function SensitivityHeatmap({ sensitivity, scale = "actual" }: Sensitivit
                   const point = lookup.get(`${er}-${rg}`);
                   if (!point) return <td key={rg} className="p-0" />;
                   const value = getMetricValue(point, metric);
-                  const bgColor = getHeatmapColor(value, minVal, maxVal, metric);
+                  const bgColor = getHeatmapColor(value, minVal, maxVal);
                   return (
                     <td
                       key={rg}
                       className="py-2 px-3 text-center font-medium border-b border-gray-200 min-w-[80px]"
-                      style={{ backgroundColor: getHeatmapColor(value, minVal, maxVal) }}
+                      style={{ backgroundColor: bgColor }}
                     >
                       {formatValue(value, metric, scale)}
                       {metric === "net_profit" && (

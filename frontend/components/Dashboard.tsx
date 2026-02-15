@@ -43,7 +43,7 @@ export function Dashboard({ output, scale = "actual" }: DashboardProps) {
         />
         <KPICard
           title="Equity Multiple"
-          value={metrics.equity_multiple.toFixed(2)}x
+          value={`${metrics.equity_multiple.toFixed(2)}x`}
           subtitle="Total return multiple"
         />
         <KPICard

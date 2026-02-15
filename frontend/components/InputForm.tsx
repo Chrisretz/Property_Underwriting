@@ -40,13 +40,21 @@ const DEFAULT_INPUT: UnderwritingInput = {
   },
 };
 
+export interface RentRollSummary {
+  grossRent: number;
+  vacancyPct: number;
+  opexPctOfEgi: number;
+}
+
 interface InputFormProps {
   onSubmit: (input: UnderwritingInput) => void;
   isLoading?: boolean;
   scale?: ValueScale;
+  /** When provided, gross rent / vacancy / OpEx come from rent roll; these fields are hidden */
+  rentRollSummary?: RentRollSummary;
 }
 
-export function InputForm({ onSubmit, isLoading, scale = "actual" }: InputFormProps) {
+export function InputForm({ onSubmit, isLoading, scale = "actual", rentRollSummary }: InputFormProps) {
   const divisor = SCALE_DIVISORS[scale];
   const scaleLabel =
     scale === "thousands" ? " (thousands DKK)" : scale === "millions" ? " (millions DKK)" : " (DKK)";
@@ -54,12 +62,27 @@ export function InputForm({ onSubmit, isLoading, scale = "actual" }: InputFormPr
   const [priceInputMode, setPriceInputMode] = useState<PriceInputMode>("fixed");
   const [entryYield, setEntryYield] = useState(5);
 
+  const grossRent = rentRollSummary?.grossRent ?? input.income.gross_rent;
+  const vacancyPct = rentRollSummary?.vacancyPct ?? input.income.vacancy_pct;
+  const opexPctOfEgi = rentRollSummary?.opexPctOfEgi ?? input.operating.opex_pct_of_egi;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    let payload = { ...input };
+    let payload: UnderwritingInput = {
+      ...input,
+      income: {
+        ...input.income,
+        gross_rent: grossRent || input.income.gross_rent,
+        vacancy_pct: vacancyPct,
+      },
+      operating: {
+        ...input.operating,
+        opex_pct_of_egi: opexPctOfEgi,
+      },
+    };
     if (priceInputMode === "entry_yield") {
-      const egi = input.income.gross_rent * (1 - input.income.vacancy_pct);
-      const noi = egi * (1 - input.operating.opex_pct_of_egi);
+      const egi = (grossRent || 0) * (1 - vacancyPct);
+      const noi = egi * (1 - opexPctOfEgi);
       const price = entryYield > 0 ? noi / (entryYield / 100) : input.deal.purchase_price;
       payload = { ...payload, deal: { ...payload.deal, purchase_price: price } };
     }
@@ -151,34 +174,43 @@ export function InputForm({ onSubmit, isLoading, scale = "actual" }: InputFormPr
             max={30}
           />
         </label>
-        <label>
-          <span className="block text-sm font-medium text-gray-700">
-            Gross Rent{scaleLabel}/yr
-          </span>
-          <NumericInput
-            value={input.income.gross_rent}
-            onChange={(v) => update("income", "gross_rent", v)}
-            multiplier={divisor}
-            decimals={scale === "actual" ? 0 : 2}
-            min={1}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-            placeholder={scale === "millions" ? "e.g. 21 or 21,5" : undefined}
-          />
-        </label>
-        <label>
-          <span className="block text-sm font-medium text-gray-700">
-            Vacancy %
-          </span>
-          <NumericInput
-            value={input.income.vacancy_pct * 100}
-            onChange={(v) => update("income", "vacancy_pct", v / 100)}
-            multiplier={1}
-            decimals={1}
-            min={0}
-            max={30}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-          />
-        </label>
+        {!rentRollSummary && (
+          <>
+            <label>
+              <span className="block text-sm font-medium text-gray-700">
+                Gross Rent{scaleLabel}/yr
+              </span>
+              <NumericInput
+                value={input.income.gross_rent}
+                onChange={(v) => update("income", "gross_rent", v)}
+                multiplier={divisor}
+                decimals={scale === "actual" ? 0 : 2}
+                min={1}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+                placeholder={scale === "millions" ? "e.g. 21 or 21,5" : undefined}
+              />
+            </label>
+            <label>
+              <span className="block text-sm font-medium text-gray-700">
+                Vacancy %
+              </span>
+              <NumericInput
+                value={input.income.vacancy_pct * 100}
+                onChange={(v) => update("income", "vacancy_pct", v / 100)}
+                multiplier={1}
+                decimals={1}
+                min={0}
+                max={30}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+              />
+            </label>
+          </>
+        )}
+        {rentRollSummary && (
+          <p className="sm:col-span-2 lg:col-span-3 text-sm text-gray-500">
+            Gross rent, vacancy % and OpEx % of EGI are taken from the Rent Roll tab.
+          </p>
+        )}
         <label>
           <span className="block text-sm font-medium text-gray-700">
             Rent Growth %
@@ -193,20 +225,22 @@ export function InputForm({ onSubmit, isLoading, scale = "actual" }: InputFormPr
             className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
           />
         </label>
-        <label>
-          <span className="block text-sm font-medium text-gray-700">
-            OpEx % of EGI
-          </span>
-          <NumericInput
-            value={input.operating.opex_pct_of_egi * 100}
-            onChange={(v) => update("operating", "opex_pct_of_egi", v / 100)}
-            multiplier={1}
-            decimals={1}
-            min={0}
-            max={60}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-          />
-        </label>
+        {!rentRollSummary && (
+          <label>
+            <span className="block text-sm font-medium text-gray-700">
+              OpEx % of EGI
+            </span>
+            <NumericInput
+              value={input.operating.opex_pct_of_egi * 100}
+              onChange={(v) => update("operating", "opex_pct_of_egi", v / 100)}
+              multiplier={1}
+              decimals={1}
+              min={0}
+              max={60}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+            />
+          </label>
+        )}
         <label>
           <span className="block text-sm font-medium text-gray-700">
             LTV %
@@ -264,7 +298,7 @@ export function InputForm({ onSubmit, isLoading, scale = "actual" }: InputFormPr
       <button
         type="submit"
         disabled={isLoading}
-        className="rounded-lg bg-primary-600 px-6 py-2.5 font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+        className="rounded-lg bg-primary-600 px-6 py-2.5 font-medium text-white transition-all duration-150 ease-out hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.97] active:brightness-95 disabled:scale-100 disabled:opacity-50 disabled:hover:scale-100"
       >
         {isLoading ? "Calculating..." : "Run Underwriting"}
       </button>

@@ -16,8 +16,8 @@ export function CashflowTable({ output, scale = "actual" }: CashflowTableProps) 
 
   const rows: { label: string; values: (number | null)[] }[] = [
     {
-      label: "Purchase price",
-      values: [purchase_price, ...cashflows.map(() => null), null],
+      label: "Purchase / sale value",
+      values: [purchase_price, ...cashflows.map(() => null), exit_value ?? null],
     },
     {
       label: "Rental income (EGI)",
@@ -58,10 +58,6 @@ export function CashflowTable({ output, scale = "actual" }: CashflowTableProps) 
     {
       label: "Levered CF",
       values: [null, ...cashflows.map((c) => c.levered_cf), null],
-    },
-    {
-      label: "Exit value",
-      values: [...Array(cashflows.length + 1).fill(null), exit_value],
     },
     {
       label: "Net proceeds",

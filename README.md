@@ -15,7 +15,7 @@ A web-based financial modeling application for property-level real estate invest
 
 ## Project Structure
 
-```
+```text
 property-underwriting/
 ├── frontend/          # Next.js (React + TypeScript)
 ├── backend/           # FastAPI (Python)
@@ -24,20 +24,36 @@ property-underwriting/
 
 ## Quick Start
 
-### Backend
+### One-command startup (recommended)
+
+From the project root, start both backend and frontend together:
+
+```bash
+npm install
+cd frontend && npm install && cd ..
+cd backend && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt && cd ..
+
+npm run dev
+```
+
+- **Backend** runs at <http://localhost:8001> (API docs: <http://localhost:8001/docs>)
+- **Frontend** runs at <http://localhost:3000> (or 3001/3002 if ports are in use)
+
+On Windows, use `npm run dev:backend` and `npm run dev:frontend` in separate terminals if `npm run dev` fails (venv path differs).
+
+### Separate startup
+
+**Backend**
 
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-PYTHONPATH=. uvicorn main:app --reload --port 8000
+PYTHONPATH=. uvicorn main:app --reload --port 8001
 ```
 
-API runs at: http://localhost:8000  
-API docs at: http://localhost:8000/docs
-
-### Frontend
+**Frontend**
 
 ```bash
 cd frontend
@@ -45,14 +61,12 @@ npm install
 npm run dev
 ```
 
-App runs at: http://localhost:3000
-
 ### Environment Variables
 
-Create `frontend/.env.local`:
+Create `frontend/.env.local` (already configured for port 8001):
 
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8001
 ```
 
 ## Tech Stack
