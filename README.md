@@ -39,7 +39,15 @@ npm run dev
 - **Backend** runs at <http://localhost:8001> (API docs: <http://localhost:8001/docs>)
 - **Frontend** runs at <http://localhost:3000> (or 3001/3002 if ports are in use)
 
-On Windows, use `npm run dev:backend` and `npm run dev:frontend` in separate terminals if `npm run dev` fails (venv path differs).
+On Windows, use either:
+
+- **Option A:** Two terminals — **Terminal 1 (backend):**  
+  `cd backend`, then  
+  `$env:PYTHONPATH = "."; .\venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001`  
+  **Terminal 2 (frontend):**  
+  `cd frontend`, then  
+  `npm install` and `npm run dev`
+- **Option B:** If Node is in PATH, run `npm run dev:backend` and `npm run dev:frontend` in separate terminals (root `npm run dev` may fail due to Unix-style venv path).
 
 ### Separate startup
 

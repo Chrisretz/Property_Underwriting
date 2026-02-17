@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && PYTHONPATH=. ./venv/bin/uvicorn main:app --reload --port 8001",
-    "dev:frontend": "cd frontend && npm run dev"
+    "dev:backend": "run-script-os",
+    "dev:backend:win32": "cd backend && set PYTHONPATH=. && venv\\Scripts\\python.exe -m uvicorn main:app --reload --port 8001",
+    "dev:backend:default": "cd backend && PYTHONPATH=. ./venv/bin/uvicorn main:app --reload --port 8001",
+    "dev:frontend": "cd frontend && npm install && npx next dev"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "run-script-os": "^1.1.6"
   }
 }

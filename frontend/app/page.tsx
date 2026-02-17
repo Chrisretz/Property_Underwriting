@@ -182,7 +182,7 @@ export default function Home() {
                 </p>
                 <p className="mt-2 text-sm text-gray-400">
                   Make sure the backend API is running at{" "}
-                  {process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}.
+                  {process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001"}.
                 </p>
               </section>
             )}
